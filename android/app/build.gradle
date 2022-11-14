@@ -2,9 +2,9 @@ apply plugin: 'com.android.application'
 
 // Crashlytics integration is done as part of Firebase now, so it gets
 // automagically activated with google-services.json
-if (googleServicesEnabled) {
-    apply plugin: 'com.google.firebase.crashlytics'
-}
+//if (googleServicesEnabled) {
+//    apply plugin: 'com.google.firebase.crashlytics'
+//}
 
 // Use the number of seconds/10 since Jan 1 2019 as the versionCode.
 // This lets us upload a new build at most every 10 seconds for the
@@ -44,7 +44,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "${googleServicesEnabled}"
+            buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "false"
             buildConfigField "boolean", "LIBRE_BUILD", "${rootProject.ext.libreBuild}"
         }
         release {
@@ -52,7 +52,7 @@ android {
             //signingConfig signingConfigs.debug
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules-release.pro'
-            buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "${googleServicesEnabled}"
+            buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "false"
             buildConfigField "boolean", "LIBRE_BUILD", "${rootProject.ext.libreBuild}"
         }
     }
@@ -85,17 +85,6 @@ dependencies {
     }
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
-
-    if (!rootProject.ext.libreBuild) {
-        implementation 'com.google.android.gms:play-services-auth:16.0.1'
-
-        // Firebase
-        //  - Crashlytics
-        //  - Dynamic Links
-        implementation 'com.google.firebase:firebase-analytics:17.5.0'
-        implementation 'com.google.firebase:firebase-crashlytics:17.2.1'
-        implementation 'com.google.firebase:firebase-dynamic-links:19.1.0'
-    }
 
     implementation project(':sdk')
 }
@@ -146,8 +135,8 @@ gradle.projectsEvaluated {
         def targetName = variant.name.capitalize()
 
         def currentRunPackagerTask = tasks.create(
-            name: "run${targetName}ReactPackager",
-            type: Exec) {
+                name: "run${targetName}ReactPackager",
+                type: Exec) {
             group = "react"
             description = "Run the React packager."
 
@@ -175,8 +164,4 @@ gradle.projectsEvaluated {
         packageTask.dependsOn(currentRunPackagerTask)
     }
 
-}
-
-if (googleServicesEnabled) {
-    apply plugin: 'com.google.gms.google-services'
 }

@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.util.VersionNumber
 
 // Top-level build file where you can add configuration options common to all
@@ -10,19 +11,30 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath 'com.google.gms:google-services:4.3.10'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.8.1'
     }
 }
 
 ext {
-    buildToolsVersion = "30.0.3"
+    buildToolsVersion = "31.0.0"
     compileSdkVersion = 31
     minSdkVersion    = 23
     targetSdkVersion = 31
     supportLibVersion = "28.0.0"
-    ndkVersion = "21.4.7075529"
+
+    if (System.properties['os.arch'] == "aarch64") {
+        // For M1 Users we need to use the NDK 24 which added support for aarch64
+        ndkVersion = "24.0.8215888"
+    } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        // For Android Users, we need to use NDK 23, otherwise the build will
+        // fail due to paths longer than the OS limit
+        ndkVersion = "23.1.7779620"
+    } else {
+        // Otherwise we default to the side-by-side NDK version from AGP.
+        ndkVersion = "21.4.7075529"
+    }
 
     // The Maven artifact groupdId of the third-party react-native modules which
     // Jitsi Meet SDK for Android depends on and which are not available in
@@ -31,12 +43,12 @@ ext {
     moduleGroupId = 'com.facebook.react'
 
     // Maven repo where artifacts will be published
-    mavenRepo = System.env.MVN_REPO ?: ""
-    mavenUser = System.env.MVN_USER ?: ""
-    mavenPassword = System.env.MVN_PASSWORD ?: ""
+    mavenRepo = "<sw-private-repo-link>"
+    mavenPrivateToken = "<private-token>"
+    mavenDeployToken = "<deploy-token>"
 
     // Libre build
-    libreBuild = (System.env.LIBRE_BUILD ?: "false").toBoolean()
+    libreBuild = true
 
     googleServicesEnabled = project.file('app/google-services.json').exists() && !libreBuild
 }
@@ -44,9 +56,9 @@ ext {
 allprojects {
     repositories {
         // React Native (JS, Obj-C sources, Android binaries) is installed from npm.
-        maven { url "$rootDir/../node_modules/react-native/android" }
+        //maven { url "$rootDir/../node_modules/react-native/android" }
         // Android JSC is installed from npm.
-        maven { url("$rootDir/../node_modules/jsc-android/dist") }
+        //maven { url("$rootDir/../node_modules/jsc-android/dist") }
         mavenCentral {
             // We don't want to fetch react-native from Maven Central as there are
             // older versions over there.
@@ -56,6 +68,21 @@ allprojects {
         }
         google()
         maven { url 'https://www.jitpack.io' }
+
+       mavenLocal()
+
+
+        maven {
+            url mavenRepo
+            credentials(HttpHeaderCredentials) {
+                name = 'Deploy-Token'
+                value = mavenDeployToken
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+
     }
 
     // Make sure we use the react-native version in node_modules and not the one
@@ -86,9 +113,12 @@ allprojects {
                 maven {
                     url rootProject.ext.mavenRepo
                     if (!rootProject.ext.mavenRepo.startsWith("file")) {
-                        credentials {
-                            username rootProject.ext.mavenUser
-                            password rootProject.ext.mavenPassword
+                        credentials(HttpHeaderCredentials) {
+                            name = "Private-Token"
+                            value = rootProject.ext.mavenPrivateToken
+                        }
+                        authentication {
+                            header(HttpHeaderAuthentication)
                         }
                     }
                 }
@@ -99,7 +129,7 @@ allprojects {
     // Use the number of seconds/10 since Jan 1 2019 as the version qualifier number.
     // This will last for the next ~680 years.
     // https://stackoverflow.com/a/38643838
-    def versionQualifierNumber = (int)(((new Date().getTime()/1000) - 1546297200) / 10)
+    def versionQualifierNumber = "sw-r${getGitVersionCode()}"
 
     afterEvaluate { project ->
         if (project.plugins.hasPlugin('android') || project.plugins.hasPlugin('android-library')) {
@@ -176,11 +206,15 @@ allprojects {
 subprojects { subproject ->
     afterEvaluate{
         if ((subproject.plugins.hasPlugin('android')
-                    || subproject.plugins.hasPlugin('android-library'))
+                || subproject.plugins.hasPlugin('android-library'))
                 && rootProject.ext.has('buildToolsVersion')) {
             android {
                 buildToolsVersion rootProject.ext.buildToolsVersion
             }
         }
     }
+}
+
+def getGitVersionCode() {
+    return 'git rev-list --count HEAD'.execute().text.trim().toInteger()
 }

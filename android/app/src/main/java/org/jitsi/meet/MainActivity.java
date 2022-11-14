@@ -38,7 +38,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashMap;
 
 /**
  * The one and only Activity that the Jitsi Meet app needs. The
@@ -56,7 +55,7 @@ public class MainActivity extends JitsiMeetActivity {
         = (int) (Math.random() * Short.MAX_VALUE);
 
     /**
-     * ServerURL configuration key for restriction configuration using {@link android.content.RestrictionsManager}
+     * ServerURL configuration key for restriction configuration using {@link RestrictionsManager}
      */
     public static final String RESTRICTION_SERVER_URL = "SERVER_URL";
 

@@ -16,7 +16,6 @@
 
 package org.jitsi.meet.sdk;
 
-import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 import android.telecom.CallAudioState;
