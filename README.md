@@ -1,5 +1,7 @@
 # <p align="center">Jitsi Meet</p>
 
+> **Note**: Some files contains sensitive data such as credentials/token/Url are not pushed into this repository. Please for more information you can contact the fork owner syermani@streamwide.com or open a ticket for instance.
+
 Jitsi Meet is a set of Open Source projects which empower users to use and deploy
 video conferencing platforms with state-of-the-art video quality and features.
 
@@ -28,7 +30,7 @@ And many more!
 
 ## Using Jitsi Meet
 
-Using Jitsi Meet is straightforward, as it's browser based. Head over to [meet.jit.si](https://meet.jit.si) and give it a try. It's anonymous, scalable and free to use. All browsers are supported! 
+Using Jitsi Meet is straightforward, as it's browser based. Head over to [meet.jit.si](https://meet.jit.si) and give it a try. It's anonymous, scalable and free to use. All browsers are supported!
 
 Using mobile? No problem, you can either use your mobile web browser or our fully-featured
 mobile apps:
